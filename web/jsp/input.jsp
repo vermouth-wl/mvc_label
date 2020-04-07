@@ -13,11 +13,13 @@
 </head>
 <body>
     <h3>用户注册</h3>
-    <fm:form action="register" method="post">
+    <fm:form action="input" method="post">
         <!-- input标签作用, 绑定表单数据 -->
         姓名: <fm:input path="name"/><br>
         性别: <fm:input path="sex"/><br>
         年龄: <fm:input path="age"/><br>
+        密码: <fm:password path="password"/><br>
+        介绍: <fm:textarea path="introduce" rows="5" cols="20"/><br>
     </fm:form>
 </body>
 </html>
