@@ -3,12 +3,22 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
     <!-- 自动扫描包 -->
     <context:component-scan base-package="com.spring_mvc"/>
 
     <!-- 自动注册处理器适配器与映射器 -->
-    <mvc:annotation-driven/>
+    <mvc:annotation-driven conversion-service="conversionService"/>
+
+    <!-- 配置类型转换器 -->
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean class="com.spring_mvc.converter.StringToDateConverter" p:partten="yyyy-MM-dd"/>
+            </list>
+        </property>
+    </bean>
 
     <!-- 处理静态路径文件 -->
     <mvc:resources mapping="/static/js/**" location="/static/js/"/>
@@ -18,4 +28,13 @@
         <property name="prefix" value="/jsp/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
+
+    <!-- 配置文件上传bean -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 设置上传文件的最大尺寸 -->
+        <property name="maxUploadSize" value="1048576"/>
+        <!-- 设置字符编码 -->
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
 </beans>

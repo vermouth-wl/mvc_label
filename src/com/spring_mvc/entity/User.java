@@ -1,6 +1,8 @@
 package com.spring_mvc.entity;
 
 
+import java.util.Date;
+
 public class User {
     private String name;
     private String sex;
@@ -8,16 +10,21 @@ public class User {
     private String password;
     private String introduce;
     private Integer deptid;
+    private Date birthday;
 
     // 构造方法
     public User(){}
-    public User(String name, String sex, Integer age, String password, String introduce, Integer deptid){
+
+
+
+    public User(String name, String sex, Integer age, String password, String introduce, Integer deptid, Date birthday){
         this.name = name;
         this.sex = sex;
         this.age = age;
         this.password = password;
         this.introduce = introduce;
         this.deptid = deptid;
+        this.birthday = birthday;
     }
 
     // getter()和setter()
@@ -68,5 +75,13 @@ public class User {
 
     public void setDeptid(Integer deptid) {
         this.deptid = deptid;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
     }
 }

@@ -3,19 +3,19 @@ package com.spring_mvc.controller;
 import com.spring_mvc.entity.Courses;
 import com.spring_mvc.entity.User;
 import com.spring_mvc.tools.UserValidator;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 用户管理控制器类
@@ -24,6 +24,7 @@ import java.util.Map;
 public class UserController {
 
     // 创建register方法, 将用户保存到Model对象中
+    // MVC标签库 <fm:input>标签, 渲染输入框
     @RequestMapping(value = "/input")
     public String register(Model model) throws Exception{
         System.out.println("调用控制器register()方法");
@@ -59,6 +60,7 @@ public class UserController {
     }
 
     // 创建checkbox()方法
+    // 渲染checkbox标签
     @RequestMapping(value = "/checkbox", method = RequestMethod.GET)
     public String checkbox(Model model){
         System.out.println("调用控制器checkbox()方法");
@@ -70,11 +72,13 @@ public class UserController {
         list.add("python web");
         list.add("java web");
         courses.setCources(list);
+        // 默认属性为command, 如果修改之后，需要在<fm:form>中申明modelAttribute=新属性名
         model.addAttribute("cources", courses);
         return "checkbox";
     }
 
     // 创建radiobutton() 方法
+    // 渲染Jsp中rediobutton标签
     @RequestMapping(value = "/radiobutton")
     public String radiobutton(Model model){
         System.out.println("调用控制器radiobutton()方法");
@@ -140,5 +144,107 @@ public class UserController {
             return "registerForm";
         }
         return "result";
+    }
+
+    // 创建请求类型输入方法
+    @RequestMapping(value = "/dataFormatIndex")
+    public String dataFormatIndex(){
+        return "dataFormat";
+    }
+
+    // 创建类型转换方法, 验证类型转换
+    @RequestMapping(value = "/dataFormat", method = RequestMethod.POST)
+    public String dataFormat(@ModelAttribute User user, Model model){
+        System.out.println("调用控制器dataFormat()方法");
+        model.addAttribute("user", user);
+        return "dataFormatSuccess";
+    }
+
+    // 创建请求单文件上传页面方法
+    @RequestMapping(value = "/oneFileUploadIndex")
+    public String oneFileUploadIndex(){
+        System.out.println("调用控制器oneFileUploadIndex()方法");
+        return "oneFileUpload";
+    }
+
+    // 创建单文件上传控制器方法
+    @RequestMapping(value = "/oneFileUpload", method = RequestMethod.POST)
+    // @RequestParam()注解用于在该控制器中绑定请求参数到方法参数, 将表单中name=file传给MultipartFile类型的file属性
+    public String oneFileUpload(@RequestParam(value = "file", required = false) MultipartFile file,
+                                HttpServletRequest request, ModelMap modelMap){
+        System.out.println("调用控制器oneFileUpload()方法");
+
+        // 服务端upload文件夹路径
+        String path = request.getSession().getServletContext().getRealPath("upload");
+        // 获取文件名
+        String fileName = file.getOriginalFilename();
+
+        // 实例化一个对象，表示目标文件（包含物理路径）
+        File targetFile = new File(path, fileName);
+        if (!targetFile.exists()){
+            targetFile.mkdirs();
+        }
+
+        // 将上传文件写到服务器上的指定文件
+        try {
+            file.transferTo(targetFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        modelMap.put("fileUrl", request.getContextPath() + "/upload/" + fileName);
+        modelMap.put("fileName", fileName);
+        return "fileUploadResult";
+    }
+
+    // 创建上传多文件页面方法
+    @RequestMapping(value = "/manyFileUploadIndex")
+    public String manyFileUploadIndex(){
+        System.out.println("调用控制器manyFileUploadIndex()方法");
+        return "manyFileUploadIndex";
+    }
+
+    // 创建上传多文件方法
+    @RequestMapping(value = "/manyFileUpload")
+    public String manyFileUpload(@RequestParam(value = "desc") String desc,
+                                 @RequestParam(value = "files") List<MultipartFile> files,
+                                 HttpServletRequest request){
+        System.out.println("调用控制器manyFileUpload()方法");
+
+        // 判断上传文件是否存在
+        if (!files.isEmpty() && files.size()>0){
+
+            // 循环输出上传的文件
+            for (MultipartFile file:files){
+
+                // 获取上传文件的名称
+                String originalFilename = file.getOriginalFilename();
+
+                // 设置上传文件的保存地址目录
+                String dirpath = request.getServletContext().getRealPath("/upload/");
+
+                File filepath = new File(dirpath);
+
+                // 如果要保存的地址不存在，则创建该地址
+                if (!filepath.exists()){
+                    filepath.mkdirs();
+                }
+
+                // 使用uuid重新命名上传的文件名称(文件描述_uuid_原始文件名称)
+                String newFilename = desc + "_" + UUID.randomUUID() + "_" + originalFilename;
+
+                // 使用MultipartFile接口的方法将文件上传到指定位置
+                try {
+                    file.transferTo(new File(dirpath + newFilename));
+                } catch (Exception e){
+                    e.printStackTrace();
+                    return "uploadError";
+                }
+
+            }
+            return "uploadSuccess";
+        } else {
+            return "uploadError";
+        }
+
     }
 }
